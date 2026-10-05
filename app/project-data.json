@@ -1,0 +1,32 @@
+{
+  "projects": [
+    {
+      "name": "Contributor Hub",
+      "owner": "Mona Patel",
+      "status": "In progress",
+      "recentActivity": "Published the contributor onboarding checklist",
+      "priority": "High"
+    },
+    {
+      "name": "Release Readiness",
+      "owner": "Jordan Lee",
+      "status": "On track",
+      "recentActivity": "Completed the staging smoke-test review",
+      "priority": "Medium"
+    },
+    {
+      "name": "Design System Refresh",
+      "owner": "Avery Chen",
+      "status": "Needs attention",
+      "recentActivity": "Waiting on accessibility review for new components",
+      "priority": "High"
+    },
+    {
+      "name": "Documentation Sprint",
+      "owner": "Sam Rivera",
+      "status": "Planning",
+      "recentActivity": "Collected feedback from the latest support rotation",
+      "priority": "Low"
+    }
+  ]
+}

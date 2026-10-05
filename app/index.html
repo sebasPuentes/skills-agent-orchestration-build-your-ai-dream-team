@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Pulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="dashboard" aria-labelledby="page-title">
+    <header class="dashboard-header">
+      <p class="eyebrow">Team overview</p>
+      <h1 id="page-title">Project Pulse</h1>
+      <p>See what is moving, who owns it, and where contributors can help next.</p>
+    </header>
+
+    <section id="project-region" aria-live="polite" aria-busy="true">
+      <div id="loading-state" class="state">
+        <h2>Loading projects</h2>
+        <p>Gathering the latest project activity.</p>
+      </div>
+      <div id="empty-state" class="state" hidden>
+        <h2>No projects yet</h2>
+        <p>Project updates will appear here when they are available.</p>
+      </div>
+      <div id="error-state" class="state" role="alert" hidden>
+        <h2>Projects could not be loaded</h2>
+        <p>Check that the dashboard is running from the Project Pulse server and try again.</p>
+      </div>
+      <div id="project-list" class="project-grid" hidden></div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const region = document.getElementById('project-region');
+      const loading = document.getElementById('loading-state');
+      const empty = document.getElementById('empty-state');
+      const error = document.getElementById('error-state');
+      const list = document.getElementById('project-list');
+
+      const showState = (state) => {
+        loading.hidden = state !== loading;
+        empty.hidden = state !== empty;
+        error.hidden = state !== error;
+        list.hidden = state !== list;
+        region.setAttribute('aria-busy', state === loading ? 'true' : 'false');
+      };
+
+      const text = (value, fallback) => {
+        if (typeof value === 'string' && value.trim()) return value.trim();
+        return fallback;
+      };
+
+      const badge = (type, value) => {
+        const label = text(value, 'Not provided');
+        const normalized = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const element = document.createElement('span');
+        element.className = `${type}${normalized ? ` ${type}-${normalized}` : ''}`;
+        element.dataset[type] = normalized;
+        element.textContent = label;
+        return element;
+      };
+
+      const renderProjects = (projects) => {
+        if (!Array.isArray(projects) || projects.length === 0) {
+          showState(empty);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        projects.forEach((project) => {
+          const card = document.createElement('article');
+          card.className = 'project-card';
+
+          const name = document.createElement('h2');
+          name.textContent = text(project && project.name, 'Unnamed project');
+          card.appendChild(name);
+
+          const details = document.createElement('dl');
+          [
+            ['Owner', project && project.owner],
+            ['Status', project && project.status],
+            ['Recent activity', project && project.recentActivity],
+            ['Priority', project && project.priority]
+          ].forEach(([label, value]) => {
+            const term = document.createElement('dt');
+            term.textContent = label;
+            const description = document.createElement('dd');
+            if (label === 'Status' || label === 'Priority') {
+              description.appendChild(badge(label.toLowerCase(), value));
+            } else {
+              description.textContent = text(value, 'Not provided');
+            }
+            details.append(term, description);
+          });
+          card.appendChild(details);
+          fragment.appendChild(card);
+        });
+
+        list.replaceChildren(fragment);
+        showState(list);
+      };
+
+      fetch('project-data.json')
+        .then((response) => {
+          if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+          return response.json();
+        })
+        .then((data) => renderProjects(data.projects))
+        .catch(() => showState(error));
+    })();
+  </script>
+</body>
+</html>
